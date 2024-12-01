@@ -9,28 +9,39 @@ Resources:
       CodeUri: src/
       Handler: index.handler
       Runtime: nodejs20.x
+      # Increase Timeout if requests are timing out
       Timeout: 30
+      # Increase MemorySize if you're processing large responses or seeing out of memory errors
       MemorySize: 512
       AutoPublishAlias: live
       Environment:
         Variables:
+          # Change model to use different models
+          # Check here: https://docs.aws.amazon.com/bedrock/latest/userguide/models-supported.html
           BEDROCK_MODEL_ID: "anthropic.claude-v2"
+          # Change region if you want to use Bedrock in a different region, e.g. us-east-1
           AWS_BEDROCK_REGION: "us-west-2"
       Policies:
         - Statement:
+            # IAM permissions required for Bedrock API calls
             - Effect: Allow
               Action:
                 - bedrock:InvokeModel
                 - bedrock:InvokeModelWithResponseStream
               Resource: "*"
+            # Add more permissions as needed, like DYNAMODB, S3, etc.
 
+  # Function URL configuration to enable HTTP access
   MyFunctionUrl:
     Type: AWS::Lambda::Url
     Properties:
       TargetFunctionArn: !Ref StreamingFunction
+      # Change AuthType to "AWS_IAM" if you need authenticated access. This lets us call from terminal.
       AuthType: NONE
+      # IMPORTANT: RESPONSE_STREAM required for streaming responses
       InvokeMode: RESPONSE_STREAM
 
+  # Permission to allow public access to Function URL
   FunctionURLPermission:
     Type: AWS::Lambda::Permission
     Properties:
